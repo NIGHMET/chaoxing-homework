@@ -1,0 +1,5 @@
+# 统一按 LF 存储与签出，避免 Windows 上 autocrlf 把文件改成 CRLF
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary

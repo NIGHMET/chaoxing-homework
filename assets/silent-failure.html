@@ -1,0 +1,93 @@
+<!-- 学习通作答页的静默失败：可见 ≠ 已提交 -->
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1180px; padding: 40px 44px 44px;
+    background: #0f1117; color: #e6e9ef;
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: .3px; margin-bottom: 6px; }
+  .sub { font-size: 15px; color: #8b93a7; margin-bottom: 30px; }
+  .row { display: flex; align-items: stretch; gap: 0; }
+  .card {
+    flex: 1; background: #171a23; border: 1px solid #262b3a;
+    border-radius: 10px; padding: 18px 18px 20px; position: relative;
+  }
+  .card + .card { margin-left: 46px; }
+  .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .5px;
+    padding: 3px 9px; border-radius: 4px; margin-bottom: 13px; font-weight: 600;
+  }
+  .ok   { background: #12331f; color: #4ade80; }
+  .bad  { background: #3a1418; color: #f87171; }
+  .warn { background: #3a2a10; color: #fbbf24; }
+  .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .card .desc { font-size: 13px; color: #8b93a7; line-height: 1.6; margin-bottom: 14px; }
+  .mock {
+    background: #0b0d13; border: 1px solid #262b3a; border-radius: 6px;
+    padding: 12px 13px; font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 12.5px; line-height: 1.75; white-space: pre-wrap; min-height: 108px;
+  }
+  .dim { color: #5c6479; }
+  .txt { color: #c9d2e3; }
+  .em { color: #f87171; }
+  .arrow { position: absolute; right: -35px; top: 50%; font-size: 21px; color: #3f475c; }
+  .foot {
+    margin-top: 30px; background: #1a1408; border: 1px solid #4a3512;
+    border-left: 3px solid #fbbf24; border-radius: 8px; padding: 15px 18px;
+    font-size: 14.5px; line-height: 1.75; color: #e6d9bd;
+  }
+  .foot b { color: #fbbf24; font-weight: 600; }
+  code { font-family: Consolas, "JetBrains Mono", monospace; font-size: 13px; color: #93c5fd; }
+</style>
+</head>
+<body>
+  <h1>这类页面最难处理的地方：失败是静默的</h1>
+  <div class="sub">UEditor / CodeMirror 里显示写满了，保存返回 200，交上去却是空的</div>
+
+  <div class="row">
+    <div class="card">
+      <span class="tag ok">① 你看到的</span>
+      <h2>富文本 / 代码编辑器</h2>
+      <div class="desc">iframe 里的 contenteditable 或 CodeMirror 实例，渲染正常、光标正常</div>
+      <div class="mock"><span class="txt">int main(){
+    int a[10],i,j,t;
+    for(i=0;i&lt;10;i++)
+        scanf("%d",&amp;a[i]);</span>
+<span class="dim">    …</span></div>
+      <div class="arrow">→</div>
+    </div>
+
+    <div class="card">
+      <span class="tag bad">② 真正被提交的</span>
+      <h2>隐藏 answer 域</h2>
+      <div class="desc">保存时 POST 的是这个字段；它只在页面自己的 flush 逻辑里才被写入</div>
+      <div class="mock">document.getElementById('answer&lt;qid&gt;').value
+
+<span class="em">""</span>          <span class="dim">← 空模板，从未被写过</span>
+<span class="dim">// 页面毫无异常，无报错、无提示</span></div>
+      <div class="arrow">→</div>
+    </div>
+
+    <div class="card">
+      <span class="tag warn">③ 服务器收到的</span>
+      <h2>保存请求 · HTTP 200</h2>
+      <div class="desc">状态码只说明请求被处理了，不说明存进去的是答案</div>
+      <div class="mock">POST /…/addStudentWork…?saveStatus=1
+  answer&lt;qid&gt;=<span class="em">（空）</span>
+
+<span class="txt">{"msg":"保存成功！","status":true}</span>
+<span class="dim">// 200 + “成功”，而内容是空的</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>截图查不出来。</b> 空隐藏域和写满的编辑器在像素上是同一个样子。唯一的判定手段是读值：逐题比对
+    <code>widget.getContent()</code> 与 <code>hiddenField.value</code> 的长度，再看请求体，最后重载页面复验——三件事各自独立，前两件都成立时第三件仍可能全错。
+  </div>
+</body>
+</html>

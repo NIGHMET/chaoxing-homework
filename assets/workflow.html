@@ -1,0 +1,89 @@
+<!-- 技能工作流程：探测 → 录入 → 刷入 → 核验 → 停在草稿 -->
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1180px; padding: 40px 44px 44px;
+    background: #0f1117; color: #e6e9ef;
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: .3px; margin-bottom: 6px; }
+  .sub { font-size: 15px; color: #8b93a7; margin-bottom: 30px; }
+  .flow { display: flex; align-items: stretch; }
+  .step {
+    flex: 1; background: #171a23; border: 1px solid #262b3a; border-radius: 10px;
+    padding: 17px 15px 19px; position: relative;
+  }
+  .step + .step { margin-left: 30px; }
+  .step:not(:last-child)::after {
+    content: ""; position: absolute; right: -22px; top: 50%;
+    width: 14px; height: 14px; border-top: 2px solid #3f475c; border-right: 2px solid #3f475c;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .n {
+    width: 25px; height: 25px; border-radius: 50%; background: #1e293b; color: #93c5fd;
+    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 13px; font-family: Consolas, monospace;
+  }
+  .step h2 { font-size: 15.5px; font-weight: 600; margin-bottom: 7px; line-height: 1.45; }
+  .step p { font-size: 12.5px; color: #8b93a7; line-height: 1.72; }
+  .step p em { color: #b6c0d4; font-style: normal; }
+  code { font-family: Consolas, "JetBrains Mono", monospace; font-size: 12px; color: #93c5fd; }
+  .split {
+    margin-top: 28px; display: flex; gap: 22px;
+  }
+  .box {
+    flex: 1; border-radius: 9px; padding: 15px 17px; font-size: 14px; line-height: 1.8;
+  }
+  .b1 { background: #0d1a24; border: 1px solid #17364a; border-left: 3px solid #38bdf8; color: #c7e2f2; }
+  .b2 { background: #1a1408; border: 1px solid #4a3512; border-left: 3px solid #fbbf24; color: #e6d9bd; }
+  .box b { font-weight: 600; }
+  .b1 b { color: #38bdf8; }
+  .b2 b { color: #fbbf24; }
+</style>
+</head>
+<body>
+  <h1>技能规定的五步流程</h1>
+  <div class="sub">每一步都对应一个具体的、会静默出错的点</div>
+
+  <div class="flow">
+    <div class="step">
+      <div class="n">1</div>
+      <h2>探测题型</h2>
+      <p>遍历 <code>.questionLi</code>，读 <code>answertype</code>、<code>.CodeMirror</code>、<code>iframe[id^=ueditor_]</code>、<code>input[type=file]</code> 的<em>实际存在情况</em>。不要照上一份作业的形态假设——<em>不是每题都能传附件</em>。</p>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <h2>读全题干</h2>
+      <p>纯文字走 <code>innerText</code>；伪代码和公式常是 <code>p.ananas.chaoxing.com</code> 的图片，直连 403，要带 <em>Referer + 浏览器 UA</em> 下载原图再放大读，别用整页截图（吸顶栏会盖住中间几行）。</p>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <h2>按控件写入</h2>
+      <p>UEditor 用 <code>execCommand</code> 而非 <code>browser_type</code>（后者焦点被 iframe 外层抢走，<em>一个字都不进且不报错</em>）；CodeMirror 用 <code>setValue</code>；一次调用只写一个实例。</p>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <h2>刷进隐藏域</h2>
+      <p><code>UE.instants[k].sync()</code> / <code>setProceduralAnswer()</code>。这一步和"写进控件"是两件事，<em>漏掉的那一题会交空答案上去</em>，而页面看上去完全正常。</p>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <h2>三段核验</h2>
+      <p>① 逐题比对控件与隐藏域长度 ② 读保存请求的 request-body 和 response-body ③ 重新导航回来复验。<em>状态码 200 不是成功信号</em>。</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="box b1">
+      <b>边界：只管录入，不管作答。</b> 答案和代码由使用者自己写。技能不提供任何"怎么答题""怎么让答案看起来像本人写的"的指导——它只保证写好的东西真的进到框里、真的存到了服务器。
+    </div>
+    <div class="box b2">
+      <b>红线：只点「暂时保存」。</b> 「提交」和它往往是同一个接口、只差一个参数，而能否重做由服务端配置决定。流程终点固定在草稿，报告里必须写明点的是哪一个；要提交需要使用者自己明确讲。
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Playwright MCP 会把页面快照和 console 日志落到这里，里面是登录态下的整页内容
+.playwright-mcp/
+**/.playwright-mcp/
+
+# 抓取题干时的临时图片与编译产物
+*.png
+*.jpg
+*.exe
+a.out
+
+# 但 README 用的两张示意图是要提交的
+!assets/*.png
+!assets/*.jpg
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

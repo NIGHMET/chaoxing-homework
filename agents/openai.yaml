@@ -1,0 +1,5 @@
+interface:
+  display_name: "超星学习通作业自动作答"
+  short_description: "在学习通 dowork 页里识别题型、把答案写进真正的作答控件、核验后只点暂时保存"
+policy:
+  allow_implicit_invocation: true
